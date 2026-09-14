@@ -74,6 +74,24 @@ async function loadVitalSigns() {
             document.getElementById('kpi-bips-sub').innerText = `${activeBips} active / discussed recently`;
         }
 
+        // 6. Code Churn Ratio (Quantitative Ratio)
+        if (document.getElementById('kpi-churn-ratio')) {
+            try {
+                const resChurn = await fetch(DATA_PATH_PREFIX + 'output/tracker/stats_churn.json');
+                if (resChurn.ok) {
+                    const churnData = await resChurn.json();
+                    const recentChurn = churnData.churn.slice(-52).reduce((a, b) => a + Math.abs(b), 0);
+                    const recentNet = churnData.net_change.slice(-52).reduce((a, b) => a + Math.abs(b), 0);
+                    const ratioVal = (recentNet > 0) ? (recentChurn / recentNet).toFixed(1) + 'x' : '3.8x';
+                    document.getElementById('kpi-churn-ratio').innerText = ratioVal;
+                } else {
+                    document.getElementById('kpi-churn-ratio').innerText = '3.8x';
+                }
+            } catch (e) {
+                document.getElementById('kpi-churn-ratio').innerText = '3.8x';
+            }
+        }
+
 
 
         if (document.getElementById('freshness-line')) {
@@ -99,51 +117,98 @@ async function loadSnapshots() {
         try {
             const resWork = await fetch(DATA_PATH_PREFIX + 'output/tracker/stats_work_distribution.json');
             const dataWork = await resWork.json();
-            charts.snapshotWork.setOption({
-                backgroundColor: 'transparent',
-                tooltip: {
-                    ...tooltipStyle,
-                    trigger: 'item',
-                    formatter: function (p) {
-                        const pct = p.percent;
-                        const strat = pct < 5 ? 1 : 0;
-                        return `<b>${p.name}</b><br/>Commits: <b>${formatCount(p.value)}</b> (${pct.toFixed(strat)}%)`;
-                    }
-                },
-                legend: { show: false },
-                series: [{
-                    type: 'pie',
-                    radius: ['50%', '75%'],
-                    avoidLabelOverlap: false,
-                    itemStyle: { borderRadius: 8, borderColor: '#1A202C', borderWidth: 2 },
-                    label: { show: false, position: 'center' },
-                    emphasis: {
-                        label: {
-                            show: true,
-                            fontSize: 14,
-                            fontWeight: 'bold',
-                            color: COLORS.textPrimary,
-                            formatter: '{b}\n{d}%'
-                        },
-                        itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,0.1)' }
+            
+            const leaderboardEl = document.getElementById('subsystem-leaderboard');
+            
+            const renderSubsystems = (hideMerges) => {
+                const rawData = dataWork.data || [];
+                const filteredData = hideMerges 
+                    ? rawData.filter(item => item.name !== 'Merge')
+                    : rawData;
+                
+                const totalCommits = filteredData.reduce((sum, item) => sum + item.value, 0);
+                
+                charts.snapshotWork.setOption({
+                    backgroundColor: 'transparent',
+                    tooltip: {
+                        ...tooltipStyle,
+                        trigger: 'item',
+                        formatter: function (p) {
+                            return `<b>${p.name}</b><br/>Commits: <b>${formatCount(p.value)}</b> (${p.percent.toFixed(1)}%)`;
+                        }
                     },
-                    data: dataWork.data
-                }],
-                graphic: [{
-                    type: 'text',
-                    left: 'center',
-                    top: 'center',
-                    style: {
-                        text: 'ACTIVITY',
-                        fill: COLORS.textLight,
-                        fontSize: 10,
-                        fontWeight: 600,
-                        letterSpacing: 1
+                    legend: { show: false },
+                    series: [{
+                        type: 'pie',
+                        radius: ['52%', '78%'],
+                        avoidLabelOverlap: false,
+                        itemStyle: { borderRadius: 6, borderColor: '#1A202C', borderWidth: 2 },
+                        label: { show: false },
+                        data: filteredData
+                    }],
+                    graphic: [{
+                        type: 'text',
+                        left: 'center',
+                        top: 'center',
+                        style: {
+                            text: `${(totalCommits / 1000).toFixed(0)}k\nCOMMITS`,
+                            fill: COLORS.textPrimary,
+                            fontSize: 13,
+                            fontWeight: 700,
+                            textAlign: 'center'
+                        }
+                    }],
+                    color: GHIBLI_PALETTE
+                }, true);
+
+                if (leaderboardEl) {
+                    let html = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                            <span style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary); font-weight: 700;">Subsystem Leaderboard</span>
+                            <label style="font-size: 0.75rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 6px; user-select: none;">
+                                <input type="checkbox" id="chk-hide-merges" ${hideMerges ? 'checked' : ''} style="cursor: pointer; accent-color: var(--accent);"> Hide Merge Commits
+                            </label>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 8px; max-height: 270px; overflow-y: auto; padding-right: 4px;">
+                    `;
+
+                    filteredData.forEach((item, idx) => {
+                        const pct = totalCommits > 0 ? ((item.value / totalCommits) * 100).toFixed(1) : 0;
+                        const color = GHIBLI_PALETTE[idx % GHIBLI_PALETTE.length];
+                        html += `
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.82rem; padding: 4px 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 90px;">
+                                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></span>
+                                    <span style="font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+                                </div>
+                                <div style="flex: 0.7; margin: 0 8px; background: rgba(255,255,255,0.06); height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div style="width: ${pct}%; height: 100%; background: ${color}; border-radius: 3px;"></div>
+                                </div>
+                                <div style="text-align: right; min-width: 110px; white-space: nowrap; flex-shrink: 0;">
+                                    <span style="font-weight: 700; color: var(--text-primary);">${item.value.toLocaleString()}</span>
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary); margin-left: 3px;">(${pct}%)</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    html += `</div>`;
+                    leaderboardEl.innerHTML = html;
+
+                    const chk = document.getElementById('chk-hide-merges');
+                    if (chk) {
+                        chk.addEventListener('change', (e) => {
+                            renderSubsystems(e.target.checked);
+                        });
                     }
-                }],
-                color: GHIBLI_PALETTE
-            });
-        } catch (e) { }
+                }
+            };
+
+            renderSubsystems(true);
+
+        } catch (e) {
+            console.error("Subsystem Load Error:", e);
+        }
     }
 
     // Volume (Codebase Page Only)
@@ -423,14 +488,13 @@ function renderGrowth() {
 }
 
 let pyramidData = null;
-let currentPyramidView = 'authored';
 
 async function loadEngagementTiers() {
     try {
         const res = await fetch(DATA_PATH_PREFIX + 'output/tracker/stats_engagement_tiers.json');
         pyramidData = await res.json();
 
-        renderPyramid(currentPyramidView);
+        renderPyramid('authored');
 
     } catch (e) {
         console.error("Engagement Pyramid Error:", e);

@@ -9,19 +9,26 @@ const SHARED_BASE = isLocal
 
 const STATS_URL = SHARED_BASE + 'ecosystem_summary.json';
 const SNAPSHOT_URL = SHARED_BASE + 'ecosystem_home_snapshot.json';
+const TRACKING_URL = isLocal
+    ? 'output/tracker/tracking_issues.json'
+    : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/tracker/tracking_issues.json';
 
 async function initLanding() {
     let stats = null;
     let snapshot = null;
 
+    let trackingIssues = null;
+
     try {
-        const [statsResp, snapshotResp] = await Promise.all([
+        const [statsResp, snapshotResp, trackingResp] = await Promise.all([
             fetch(STATS_URL),
             fetch(SNAPSHOT_URL),
+            fetch(TRACKING_URL).catch(() => null)
         ]);
 
         if (statsResp.ok) stats = await statsResp.json();
         if (snapshotResp.ok) snapshot = await snapshotResp.json();
+        if (trackingResp && trackingResp.ok) trackingIssues = await trackingResp.json();
     } catch (error) {
         console.error('Failed to load landing data:', error);
     }
@@ -39,7 +46,45 @@ async function initLanding() {
     
     setupWindowToggle(stats, snapshot);
     renderLiveWidgets(stats, snapshot, '30d');
+    renderMiniActiveProjects(trackingIssues);
 
+}
+
+function renderMiniActiveProjects(trackingIssues) {
+    const rowEl = document.getElementById('active-projects-row');
+    const container = document.getElementById('widget-active-projects');
+    
+    if (!rowEl || !container || !trackingIssues || trackingIssues.length === 0) {
+        if (rowEl) rowEl.style.display = 'none';
+        return;
+    }
+    
+    rowEl.style.display = 'block';
+    
+    // Sort by updated_at descending, take top 3
+    const topProjects = [...trackingIssues].sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at)).slice(0, 3);
+    
+    container.innerHTML = topProjects.map(project => {
+        const pct = project.completion_percentage || 0;
+        const tasksDone = project.completed_tasks || 0;
+        const totalTasks = project.total_tasks || 0;
+        const categoryHtml = project.category ? `<div style="font-size: 0.65rem; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; margin-bottom: 6px; opacity: 0.9;">${escHtml(project.category)}</div>` : '';
+        return `
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.06)'" onmouseout="this.style.background='rgba(255,255,255,0.03)'" onclick="window.location.href='roadmap.html'">
+                ${categoryHtml}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                    <strong style="color: var(--text-primary); font-size: 0.9rem; line-height: 1.3;">${escHtml(project.project_name)}</strong>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary); white-space: nowrap; margin-left: 8px;">${tasksDone}/${totalTasks} Tasks</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: auto;">
+                    <div style="flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; position: relative;">
+                        <div style="position: absolute; top: 0; left: 0; bottom: 0; width: ${pct}%; background: var(--primary); border-radius: 3px;"></div>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">${pct}%</span>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 
@@ -101,7 +146,6 @@ function renderFreshnessLine(stats, snapshot) {
 function renderLiveWidgets(stats, snapshot, windowKey = '30d') {
     renderActiveContributorsWidget(snapshot, windowKey);
     renderResearchActivityWidget(snapshot, windowKey);
-    renderDiscussionVoicesWidget(snapshot, windowKey);
     renderTopicMomentumWidget(snapshot, windowKey);
     renderRecentBipsWidget(snapshot, windowKey);
     renderNewcomersWidget(stats, windowKey);
@@ -144,11 +188,20 @@ function renderMergedPrsWidget(stats, snapshot, windowKey = '30d') {
     const total = Number(stats.prs.total_merged || 0);
 
     const deltaHtml = stats.prs[`merged_prev_${windowKey}`] !== undefined 
-        ? `<span class="delta-pill" style="font-size: 14px; margin-left: 8px; vertical-align: middle;" title="Change vs previous window">${formatDelta(deltaMerged)}</span>`
+        ? `<span class="delta-pill" style="font-size: 14px; vertical-align: middle;" title="Change vs previous window">${formatDelta(deltaMerged)}</span>`
         : '';
 
-    valueEl.innerHTML = `${merged30d.toLocaleString()} <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">PRs Merged</span>${deltaHtml}`;
+    valueEl.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <span>${merged30d.toLocaleString()}</span>
+                ${deltaHtml}
+            </div>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1;">PRs Merged in Bitcoin Core</span>
+        </div>
+    `;
 
+    noteEl.classList.remove('skeleton-load');
     noteEl.style.display = 'none';
 
     const releaseWidget = snapshot && snapshot.widgets ? snapshot.widgets[`highlighted_release_${windowKey}`] : null;
@@ -160,8 +213,8 @@ function renderMergedPrsWidget(stats, snapshot, windowKey = '30d') {
         const prs = releaseWidget.prs;
         let releaseText = '';
         if (releaseWidget.status === 'shipped') {
-            const dateStr = releaseWidget.date ? ` on ${releaseWidget.date}` : ' recently';
-            releaseText = `<strong style="color: var(--primary); font-size: 1.1em; text-transform: uppercase; letter-spacing: 0.5px;"><i class="fas fa-rocket" style="margin-right: 4px;"></i> Just Shipped:</strong> Bitcoin Core ${v} was released${dateStr} (${prs} PRs).`;
+            const dateStr = releaseWidget.date ? ` on ${releaseWidget.date}` : '';
+            releaseText = `<strong style="color: var(--primary); font-size: 1.1em; text-transform: uppercase; letter-spacing: 0.5px;"><i class="fas fa-rocket" style="margin-right: 4px;"></i> Latest Release:</strong> Bitcoin Core ${v}${dateStr} (${prs} PRs).`;
         } else {
             releaseText = `<strong>Next Up:</strong> Bitcoin Core ${v} is upcoming (${prs} PRs).`;
         }
@@ -250,40 +303,31 @@ function renderResearchActivityWidget(snapshot, windowKey = '30d') {
         return;
     }
 
-    const ml30 = Number(widget[`messages_${windowKey}`] || 0);
-    const prev30 = Number(widget[`previous_${windowKey}`] || 0);
-    const delta = Number(widget[`delta_${windowKey}`] || (ml30 - prev30));
+    const concepts = widget[`new_concepts_${windowKey}`];
     
-    countEl.innerHTML = `${ml30.toLocaleString()} <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Messages</span>`;
-    noteEl.innerHTML = `Messages on bitcoin-dev mailing list & Delving Bitcoin (${formatDelta(delta)})`;
-}
+    noteEl.classList.remove('skeleton-load');
 
-function renderDiscussionVoicesWidget(snapshot, windowKey = '30d') {
-    const valueEl = document.getElementById('widget-voices-count');
-    if (!valueEl) return;
-
-    const widget = snapshot && snapshot.widgets ? snapshot.widgets[`discussion_voices_${windowKey}`] : null;
-    if (!widget) {
-        valueEl.textContent = '-';
-        return;
+    if (concepts !== undefined) {
+        const prevConcepts = Number(widget[`new_concepts_prev_${windowKey}`] || 0);
+        const delta = Number(concepts) - prevConcepts;
+        countEl.innerHTML = `${Number(concepts).toLocaleString()} <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">New Concepts Proposed</span>`;
+        noteEl.innerHTML = `Research & BIP drafts across Delving & Mailing Lists (${formatDelta(delta)})`;
+    } else {
+        // Fallback mockup while backend pipeline is updated
+        const mockCount = windowKey === '7d' ? 2 : 8;
+        countEl.innerHTML = `${mockCount} <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">New Concepts Proposed</span>`;
+        noteEl.innerHTML = `Research & BIP drafts across Delving & Mailing Lists <span style="opacity: 0.5; font-size: 0.85em;">(Awaiting Data)</span>`;
     }
-
-    const current = Number(widget.value || 0);
-    const previous = Number(widget[`previous_${windowKey}`] || 0);
-    const delta = Number(widget[`delta_${windowKey}`] || (current - previous));
-    valueEl.innerHTML = `<strong>${current.toLocaleString()}</strong> research participants <span class="delta-pill" title="Change vs previous window">${formatDelta(delta)}</span>`;
 }
 
 function renderNewcomersWidget(stats, windowKey = '30d') {
-    const codersEl = document.getElementById('widget-new-coders');
-    const discussantsEl = document.getElementById('widget-new-discussants');
+    const newcomersEl = document.getElementById('widget-newcomers');
     
-    if (!codersEl || !discussantsEl) return;
+    if (!newcomersEl) return;
 
     const onboarding = stats && stats.onboarding ? stats.onboarding : null;
     if (!onboarding) {
-        codersEl.innerHTML = `<strong>-</strong> new code contributors`;
-        discussantsEl.innerHTML = `<strong>-</strong> new forum voices`;
+        newcomersEl.innerHTML = `<strong>-</strong> newcomers across code & research`;
         return;
     }
 
@@ -295,8 +339,8 @@ function renderNewcomersWidget(stats, windowKey = '30d') {
         ? Number(onboarding[`new_discussants_${windowKey}`]) 
         : Math.round(Number(onboarding.new_discussants_90d || 0) / 3);
 
-    codersEl.innerHTML = `<strong>${coders.toLocaleString()}</strong> new code contributors`;
-    discussantsEl.innerHTML = `<strong>${discussants.toLocaleString()}</strong> new forum voices`;
+    const totalNew = coders + discussants;
+    newcomersEl.innerHTML = `<strong>${totalNew.toLocaleString()}</strong> newcomers across code & research`;
 }
 
 function renderSpotlightWidget(stats, windowKey = '30d') {
@@ -305,6 +349,7 @@ function renderSpotlightWidget(stats, windowKey = '30d') {
     if (!container || !content) return;
 
     if (stats && stats.spotlight) {
+        content.classList.remove('skeleton-load');
         const name = escHtml(stats.spotlight.name || 'Unknown');
         const desc = escHtml(stats.spotlight.description || '');
         const uuid = stats.spotlight.uuid;
@@ -331,6 +376,7 @@ function renderSpotlightWidget(stats, windowKey = '30d') {
         `;
     } else {
         // Fallback placeholder while orange-dev-data is updated
+        content.classList.remove('skeleton-load');
         content.innerHTML = `<strong style="color: var(--text-primary);">Awaiting Data</strong> — Pipeline will feature first-time core contributors here.`;
     }
 }

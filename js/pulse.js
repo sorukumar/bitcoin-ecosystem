@@ -1,6 +1,5 @@
 /**
- * Protocol Pulse — Page Logic
- * Fetches discussions_pulse.json + ecosystem_summary.json and renders all sections.
+ * Protocol Pulse — Page Logic (Option A Terminal Dashboard)
  */
 
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -13,49 +12,25 @@ const ECOSYSTEM_URL = isLocal
     ? 'output/shared/ecosystem_summary.json'
     : 'https://raw.githubusercontent.com/sorukumar/orange-dev-data/main/output/shared/ecosystem_summary.json';
 
-// Palette for theme bars (cycles for up to 10 themes)
-const THEME_COLORS = [
-    'var(--primary)',
-    '#3b82f6',
-    '#10b981',
-    '#8b5cf6',
-    '#f59e0b',
-    '#ec4899',
-    '#06b6d4',
-    '#ef4444',
-    '#84cc16',
-    '#71717a',
-];
-
 let pulseData = null;
 let activeWindow = '90d';
 let activeThreadSource = 'all';
+let activeThemeCategory = null;
 
 async function initPulse() {
     try {
-        const [pulseResp, ecoResp] = await Promise.all([
-            fetch(PULSE_URL),
-            fetch(ECOSYSTEM_URL),
-        ]);
+        const pulseResp = await fetch(PULSE_URL);
 
         if (!pulseResp.ok) throw new Error(`Pulse fetch failed: ${pulseResp.status}`);
         pulseData = await pulseResp.json();
-
-        let ecoData = null;
-        if (ecoResp.ok) {
-            ecoData = await ecoResp.json();
-        }
-
+        
         setupToggle();
         setupThreadTabs();
         renderWindow(activeWindow);
-
-        if (ecoData) {
-            // R&D Focus hidden — renderRdFocus(ecoData.rd_focus || {});
-        }
+        
     } catch (err) {
         console.error('Failed to load pulse data:', err);
-        const hero = document.querySelector('.hero-section p');
+        const hero = document.querySelector('.hero-narrative');
         if (hero) hero.textContent = 'Discussion data is currently unavailable. Please try again later.';
     }
 }
@@ -66,6 +41,7 @@ function setupToggle() {
             document.querySelectorAll('.window-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             activeWindow = btn.dataset.window;
+            activeThemeCategory = null; // reset theme filter on window change
             renderWindow(activeWindow);
         });
     });
@@ -120,67 +96,105 @@ function renderEditorial(editorial) {
     }
 }
 
-// ── Stats row ──────────────────────────────────────────────────────────────
+// ── Stats row (Compact Hero Badge) ───────────────────────────────────────────
 function renderStats(data) {
-    setText('stat-messages', (data.total_messages || 0).toLocaleString());
-    setText('stat-threads', (data.total_threads || 0).toLocaleString());
-    setText('stat-voices', (data.unique_voices || 0).toLocaleString());
+    const metaEl = document.getElementById('pulse-hero-meta');
+    if (metaEl) {
+        metaEl.innerHTML = `<i class="fas fa-chart-line" style="color: var(--primary);"></i> <strong>${(data.total_threads || 0).toLocaleString()}</strong> threads · <strong>${(data.unique_voices || 0).toLocaleString()}</strong> voices`;
+    }
 }
 
-// ── Themes ──────────────────────────────────────────────────────────────────
+// ── Compact Theme Filter Pills ───────────────────────────────────────────────
 function renderThemes(themes) {
-    const el = document.getElementById('themes-grid');
+    const el = document.getElementById('themes-pills');
     if (!el) return;
 
     if (themes.length === 0) {
-        el.innerHTML = '<p style="color: var(--text-secondary); font-size: 14px;">No theme data available.</p>';
+        el.innerHTML = '<p style="color: var(--text-secondary); font-size: 13px;">No theme data available.</p>';
         return;
     }
 
-    const maxShare = themes[0]?.share || 1;
-
-    el.innerHTML = themes.map((t, i) => {
-        const color = THEME_COLORS[i] || THEME_COLORS[THEME_COLORS.length - 1];
-        const barWidth = maxShare > 0 ? Math.round((t.share / maxShare) * 100) : 0;
-        const trendClass = `trend-${t.trend || 'steady'}`;
-        const trendLabel = { rising: '↑ Rising', fading: '↓ Fading', steady: 'Steady', new: '★ New' }[t.trend] || 'Steady';
+    el.innerHTML = themes.map(t => {
+        const isSelected = activeThemeCategory === t.category;
+        const trendSymbol = { rising: '↑', fading: '↓', steady: '', new: '★' }[t.trend] || '';
 
         return `
-            <div class="theme-card">
-                <div class="theme-card-top">
-                    <span class="theme-label">${t.label}</span>
-                    <div class="theme-meta">
-                        <span class="theme-share">${t.share}%</span>
-                        <span class="trend-badge ${trendClass}">${trendLabel}</span>
-                    </div>
-                </div>
-                <div class="theme-bar-bg">
-                    <div class="theme-bar-fill" style="width: ${barWidth}%; background: ${color};"></div>
-                </div>
-                <div class="theme-detail">
-                    <span><strong>${t.msgs.toLocaleString()}</strong> messages</span>
-                    <span><strong>${t.threads.toLocaleString()}</strong> threads</span>
-                    <span><strong>${t.voices.toLocaleString()}</strong> voices</span>
-                </div>
-            </div>
+            <button type="button" class="theme-pill ${isSelected ? 'selected-pill' : ''}" data-category="${escHtml(t.category)}">
+                <span>${escHtml(t.label)}</span>
+                <span class="theme-pill-share">${t.share}% ${trendSymbol}</span>
+            </button>
         `;
     }).join('');
+
+    // Attach click handlers to theme pills
+    el.querySelectorAll('.theme-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const category = pill.dataset.category;
+            if (activeThemeCategory === category) {
+                activeThemeCategory = null;
+            } else {
+                activeThemeCategory = category;
+            }
+            
+            const currentData = pulseData?.windows?.[activeWindow];
+            if (currentData) {
+                renderThemes(currentData.themes || []);
+                renderHotThreads(currentData.hot_threads || [], activeThreadSource);
+            }
+        });
+    });
+}
+
+function clearThemeFilter() {
+    activeThemeCategory = null;
+    const currentData = pulseData?.windows?.[activeWindow];
+    if (currentData) {
+        renderThemes(currentData.themes || []);
+        renderHotThreads(currentData.hot_threads || [], activeThreadSource);
+    }
 }
 
 // ── Hot Threads ─────────────────────────────────────────────────────────────
 function renderHotThreads(threads, sourceFilter) {
     const el = document.getElementById('hot-threads-list');
+    const filterBar = document.getElementById('active-theme-filter-bar');
     if (!el) return;
 
-    const filtered = (sourceFilter && sourceFilter !== 'all')
-        ? threads.filter(t => t.source === sourceFilter)
-        : threads;
+    let filtered = threads;
 
-    const toRender = filtered.slice(0, 8);
+    // Source Filter
+    if (sourceFilter && sourceFilter !== 'all') {
+        filtered = filtered.filter(t => t.source === sourceFilter);
+    }
+
+    // Theme Filter
+    if (activeThemeCategory) {
+        filtered = filtered.filter(t => t.category === activeThemeCategory);
+    }
+
+    // Update Filter Bar
+    if (filterBar) {
+        if (activeThemeCategory) {
+            const currentThemes = pulseData?.windows?.[activeWindow]?.themes || [];
+            const activeThemeObj = currentThemes.find(t => t.category === activeThemeCategory);
+            const themeLabel = activeThemeObj ? activeThemeObj.label : activeThemeCategory;
+            
+            filterBar.style.display = 'inline-flex';
+            filterBar.innerHTML = `
+                <span><i class="fas fa-filter" style="color: var(--primary); margin-right: 6px;"></i> Filtered by: <strong>${escHtml(themeLabel)}</strong></span>
+                <button type="button" onclick="clearThemeFilter()" title="Clear theme filter">Clear ×</button>
+            `;
+        } else {
+            filterBar.style.display = 'none';
+            filterBar.innerHTML = '';
+        }
+    }
+
+    const toRender = filtered.slice(0, 12);
 
     if (toRender.length === 0) {
         const label = sourceFilter === 'delving' ? 'Delving Bitcoin' : sourceFilter === 'mailing_list' ? 'the mailing list' : 'this window';
-        el.innerHTML = `<p style="color: var(--text-secondary); font-size: 14px;">No active threads from ${label} in this window.</p>`;
+        el.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--text-secondary);"><i class="fas fa-filter" style="font-size: 1.5rem; display: block; margin-bottom: 10px; opacity: 0.4;"></i> No threads match the active filters in ${label}. <button onclick="clearThemeFilter()" style="background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; margin-left: 6px;">Reset Filter</button></div>`;
         return;
     }
 
@@ -190,7 +204,8 @@ function renderHotThreads(threads, sourceFilter) {
         const sourceLabel = t.source === 'delving' ? 'Delving' : 'Mailing List';
         const lastPost = t.last_post ? formatDate(t.last_post) : '';
         
-        const subjectHtml = hasLink ? `<a href="${escHtml(t.link)}" target="_blank" style="color: inherit; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${escHtml(t.subject)}</a>` : escHtml(t.subject);
+        const externalIcon = `<i class="fas fa-external-link-alt" style="font-size: 0.75rem; margin-left: 6px; opacity: 0.6;"></i>`;
+        const subjectHtml = hasLink ? `<a href="${escHtml(t.link)}" target="_blank" style="color: inherit; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${escHtml(t.subject)}${externalIcon}</a>` : escHtml(t.subject);
 
         let authorName = t.author || '';
         authorName = authorName.replace(/'? via Bitcoin Development Mailing List'?/gi, '').replace(/'/g, '').trim();
@@ -225,7 +240,7 @@ function renderHotThreads(threads, sourceFilter) {
                 </div>
                 ${t.technical_summary ? `
                 <details class="thread-tech-details">
-                    <summary>Technical Details</summary>
+                    <summary>Technical Summary</summary>
                     <div class="tech-details-content">${escHtml(t.technical_summary)}</div>
                 </details>
                 ` : ''}
@@ -251,14 +266,14 @@ function renderBipSpotlight(bips) {
 
     el.innerHTML = bips.map(b => `
         <div class="bip-row">
-            <span class="bip-id">BIP ${escHtml(String(b.bip_id))}</span>
+            <span class="bip-id"><a href="https://bips.dev/${b.bip_id}/" target="_blank" style="color: inherit; text-decoration: none;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='inherit'">BIP ${escHtml(String(b.bip_id))}</a></span>
             <span class="bip-title">${b.title ? escHtml(b.title) : '—'}</span>
             <span class="bip-mentions">${b.mentions} mention${b.mentions === 1 ? '' : 's'}</span>
         </div>
     `).join('');
 }
 
-// ── Top Voices ───────────────────────────────────────────────────────────────
+// ── Key R&D Authors (Elevated with Avatars & Initials) ────────────────────────
 function renderTopVoices(voices) {
     const el = document.getElementById('top-voices');
     if (!el) return;
@@ -268,54 +283,29 @@ function renderTopVoices(voices) {
         return;
     }
 
-    el.innerHTML = voices.map((v, i) => `
-        <a href="https://network.bitcoindatalabs.org/profile.html?uuid=${encodeURIComponent(v.uuid)}" target="_blank" class="voice-row" style="text-decoration: none;">
-            <span class="voice-rank">${i + 1}</span>
-            <span class="voice-name" style="color: var(--text-primary); text-decoration: none;">${escHtml(v.name)}</span>
-            <span class="voice-posts">${v.posts} post${v.posts === 1 ? '' : 's'}</span>
-        </a>
-    `).join('');
+    el.innerHTML = voices.map((v, i) => {
+        const initials = getInitials(v.name);
+        return `
+            <a href="https://network.bitcoindatalabs.org/profile.html?uuid=${encodeURIComponent(v.uuid)}" target="_blank" class="voice-row" style="text-decoration: none;">
+                <span class="voice-rank">${i + 1}</span>
+                <div class="author-avatar-circle">${escHtml(initials)}</div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="voice-name" style="color: var(--text-primary); text-decoration: none; font-weight: 700;">${escHtml(v.name)}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); opacity: 0.8;">${v.posts} post${v.posts === 1 ? '' : 's'} in window</div>
+                </div>
+                <i class="fas fa-chevron-right" style="font-size: 0.75rem; color: var(--text-secondary); opacity: 0.4;"></i>
+            </a>
+        `;
+    }).join('');
 }
 
-// ── R&D Focus ────────────────────────────────────────────────────────────────
-function renderRdFocus(rdFocus) {
-    if (!rdFocus || Object.keys(rdFocus).length === 0) return;
-
-    const SKIP = new Set(['Other', 'General', 'None', 'none', 'code', 'other', '']);
-    const sorted = Object.entries(rdFocus)
-        .filter(([k]) => !SKIP.has(k))
-        .sort((a, b) => b[1] - a[1]);
-
-    const top = sorted.slice(0, 5);
-    if (top.length === 0) return;
-
-    setText('rd-focus-val', top[0][0]);
-    setText('rd-focus-sub', `Leading R&D area by contributor focus (${top[0][1]}% of active contributors)`);
-
-    const bar = document.getElementById('focus-bar');
-    const legend = document.getElementById('focus-legend');
-    if (!bar) return;
-
-    bar.innerHTML = '';
-    if (legend) legend.innerHTML = '';
-
-    top.forEach(([name, pct], i) => {
-        const color = THEME_COLORS[i] || 'var(--text-secondary)';
-
-        const seg = document.createElement('div');
-        seg.className = 'focus-segment';
-        seg.style.width = `${pct}%`;
-        seg.style.background = color;
-        seg.title = `${name}: ${pct}%`;
-        bar.appendChild(seg);
-
-        if (legend) {
-            const dot = document.createElement('div');
-            dot.style.cssText = `display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-secondary);`;
-            dot.innerHTML = `<span style="width:8px; height:8px; border-radius:50%; background:${color}; display:inline-block; flex-shrink:0;"></span>${escHtml(name)} <span style="color:var(--text-primary); font-weight:600;">${pct}%</span>`;
-            legend.appendChild(dot);
-        }
-    });
+function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
 }
 
 // ── Utilities ────────────────────────────────────────────────────────────────

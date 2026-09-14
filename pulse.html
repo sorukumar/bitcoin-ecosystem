@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Protocol Pulse | Orange Dev Tracker | Bitcoin Data Labs</title>
+    <title>Discussions | Orange Dev Tracker | Bitcoin Data Labs</title>
     <meta name="description"
         content="What Bitcoin developers are debating right now — active threads, trending topics, and key voices from Delving Bitcoin and the mailing list.">
     <link rel="canonical" href="https://tracker.bitcoindatalabs.org/pulse.html">
@@ -36,101 +36,84 @@
             <div class="page-hero">
                 <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
                     <p class="hero-narrative">What Bitcoin developers are debating right now — and where the protocol is heading.</p>
-                    <div class="window-toggle" style="margin: 0;">
-                        <button class="window-btn active" data-window="90d">Last 90 Days</button>
-                        <button class="window-btn" data-window="30d">Last 30 Days</button>
-                        <button class="window-btn" data-window="7d">Last 7 Days</button>
-                    </div>
-                </div>
-                <!-- Top-line stats row -->
-                <div class="pulse-stats-row" id="pulse-stats-row" style="margin-top: 20px;">
-                    <div class="pulse-stat">
-                        <div class="pulse-stat-value" id="stat-threads">—</div>
-                        <div class="pulse-stat-label">Active Threads</div>
-                    </div>
-                    <div class="pulse-stat">
-                        <div class="pulse-stat-value" id="stat-messages">—</div>
-                        <div class="pulse-stat-label">Messages</div>
-                    </div>
-                    <div class="pulse-stat">
-                        <div class="pulse-stat-value" id="stat-voices">—</div>
-                        <div class="pulse-stat-label">Unique Participants</div>
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <div class="window-toggle" style="margin: 0;">
+                            <button class="window-btn active" data-window="90d">Last 90 Days</button>
+                            <button class="window-btn" data-window="30d">Last 30 Days</button>
+                            <button class="window-btn" data-window="7d">Last 7 Days</button>
+                        </div>
+                        <span id="pulse-hero-meta" class="pulse-hero-meta"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Pulse Editorial (populated by JS if data available) -->
-            <div class="pulse-section">
+            <!-- Pulse Editorial Summary -->
+            <div class="pulse-section" style="margin-top: -8px;">
                 <div id="pulse-editorial-container" class="pulse-editorial-box" style="display: none;">
-                    <h3>This Month's Pulse</h3>
+                    <h3>This Month's Pulse Synthesis</h3>
                     <p id="pulse-editorial-summary"></p>
                     <ul id="pulse-editorial-insights"></ul>
                 </div>
             </div>
 
-            <!-- Section: Dominant Themes -->
-            <div class="pulse-section">
-                <div class="pulse-section-header">
-                        <h2>Dominant Themes</h2>
-                        <p>Which areas of Bitcoin protocol are generating the most discussion right now. Trend signals
-                            compare the selected window against the longer 90-day baseline.</p>
-                    </div>
-                    <div id="themes-grid" class="themes-grid"></div>
-                </div>
-
-                <!-- Section: Hottest Threads -->
-                <div class="pulse-section">
-                    <div class="pulse-section-header">
-                        <h2>Hottest Threads</h2>
-                        <p>Ranked by engagement breadth — reply count multiplied by unique participants. A thread with ten
-                            replies from ten different people signals broader community interest than ten replies from
-                            one.</p>
-                        <div class="thread-tabs">
-                            <button class="thread-tab active" data-source="all">All</button>
-                            <button class="thread-tab" data-source="delving">Delving Bitcoin</button>
-                            <button class="thread-tab" data-source="mailing_list">Mailing List</button>
+            <!-- 2-Column Terminal Layout: Main Threads (Left) & Sidebar Intelligence (Right) -->
+            <div class="pulse-terminal-grid">
+                
+                <!-- Left Main Column: Theme Filter Pills + Hottest Threads -->
+                <main class="pulse-terminal-main">
+                    
+                    <!-- Compact Dominant Theme Pills -->
+                    <div class="pulse-section" style="margin-bottom: 24px;">
+                        <div class="pulse-section-header" style="margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="font-size: 1.05rem; margin: 0;"><i class="fas fa-layer-group" style="color: var(--primary); margin-right: 6px;"></i> Dominant Themes</h2>
+                            <span style="font-size: 0.78rem; color: var(--text-secondary);">Click any theme to filter threads</span>
                         </div>
+                        <div id="themes-pills" class="themes-pills-container"></div>
                     </div>
-                    <div id="hot-threads-list" class="hot-threads-list"></div>
-                </div>
 
-                <!-- Two-column: BIP Spotlight + Top Voices -->
-                <div class="pulse-two-col">
-                    <div class="pulse-section pulse-col">
+                    <!-- Hottest Threads -->
+                    <div class="pulse-section" style="margin-bottom: 0;">
                         <div class="pulse-section-header">
-                            <h2>BIP Spotlight</h2>
-                            <p>Most-referenced Bitcoin Improvement Proposals in the current window.</p>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px;">
+                                <div>
+                                    <h2 style="font-size: 1.2rem; margin-bottom: 4px;">Hottest Threads</h2>
+                                    <p style="font-size: 0.85rem; margin: 0; color: var(--text-secondary);">Ranked by unique developer engagement and discussion breadth.</p>
+                                </div>
+                                <div class="thread-tabs">
+                                    <button class="thread-tab active" data-source="all">All</button>
+                                    <button class="thread-tab" data-source="delving">Delving Bitcoin</button>
+                                    <button class="thread-tab" data-source="mailing_list">Mailing List</button>
+                                </div>
+                            </div>
+                            <!-- Active Theme Filter Bar -->
+                            <div id="active-theme-filter-bar" class="active-theme-filter-bar" style="display: none; margin-top: 12px;"></div>
                         </div>
-                        <div id="bip-spotlight" class="bip-spotlight-list"></div>
+                        <div id="hot-threads-list" class="hot-threads-list"></div>
                     </div>
-                    <div class="pulse-section pulse-col">
-                        <div class="pulse-section-header">
-                            <h2>Active Participants</h2>
-                            <p>Researchers and developers most active in this window.</p>
+                </main>
+
+                <!-- Right Sidebar Column: Key R&D Authors + BIP Spotlight -->
+                <aside class="pulse-terminal-sidebar">
+                    
+                    <!-- Elevated Key R&D Authors -->
+                    <div class="sidebar-block" style="margin-bottom: 24px;">
+                        <div class="sidebar-block-header">
+                            <h3><i class="fas fa-user-shield" style="color: var(--primary); margin-right: 6px;"></i> Key R&D Authors</h3>
+                            <p>Researchers driving discussion in this window.</p>
                         </div>
                         <div id="top-voices" class="top-voices-list"></div>
                     </div>
-                </div>
 
-                <!-- Section: R&D Focus (hidden, revisit later) -->
-                <div class="pulse-section" style="display: none;">
-                    <div class="pulse-section-header">
-                        <h2>Current R&amp;D Focus</h2>
-                        <p>Where contributors are committing code — not how they're talking, but what they're building.
-                            Each contributor is assigned a primary technical domain based on their commit history, and
-                            this chart shows how those domains are distributed across all active contributors.
-                            <em>This is a code signal, separate from the discussion themes above.</em>
-                        </p>
-                    </div>
-                    <div class="metric-card" id="rd-focus-card" style="max-width: 100%; margin: 0;">
-                        <div id="rd-focus-val" class="metric-value">—</div>
-                        <div id="rd-focus-sub" class="metric-subtext">Calculating momentum...</div>
-                        <div id="focus-bar" class="focus-bar-container" style="margin-top: 16px;"></div>
-                        <div id="focus-legend" style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 10px;">
+                    <!-- BIP Spotlight -->
+                    <div class="sidebar-block">
+                        <div class="sidebar-block-header">
+                            <h3><i class="fas fa-file-code" style="color: var(--primary); margin-right: 6px;"></i> BIP Spotlight</h3>
+                            <p>Most-referenced proposals.</p>
                         </div>
+                        <div id="bip-spotlight" class="bip-spotlight-list"></div>
                     </div>
-                </div>
 
+                </aside>
             </div>
         </div>
 

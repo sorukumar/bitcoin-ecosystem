@@ -7,14 +7,15 @@ document.addEventListener('DOMContentLoaded', () => {
             navLinks: [
                 { name: 'Home', url: 'index.html' },
                 { name: 'Engineering', url: 'engineering.html' },
-                { name: 'Protocol Pulse', url: 'pulse.html' },
+                { name: 'Discussions', url: 'pulse.html' },
+                { name: 'Active Initiatives', url: 'roadmap.html' },
                 { name: 'Releases', url: 'releases.html' },
                 { name: 'Health', url: 'health.html' }
             ],
             footerLinks: [
                 { name: 'Methodology & Definitions', url: 'https://tracker.bitcoindatalabs.org/methodology.html' }
             ],
-            feedbackUrl: 'roadmap.html',
+            feedbackUrl: 'feedback.html',
             suiteLinks: [
                 { name: 'orange-dev-network', url: 'https://network.bitcoindatalabs.org', icon: 'fas fa-project-diagram' },
                 { name: 'this-week-in-bitcoin', url: 'https://twib.bitcoindatalabs.org', icon: 'fas fa-newspaper' }

@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInputEl = document.getElementById('pr-search-input');
 
     let releasesData = [];
+    let trackingIssuesData = [];
+    let optechCrossref = {};
     let currentVersion = null;
     let activeFilter = 'All';
     let activeAuthorFilter = null;
@@ -63,9 +65,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const response = await fetch(DATA_PATH_PREFIX + 'output/tracker/releases.json');
-        if (!response.ok) throw new Error('Failed to fetch releases.json');
-        releasesData = await response.json();
+        const [releasesRes, trackingIssuesRes, optechRes] = await Promise.all([
+            fetch(DATA_PATH_PREFIX + 'output/tracker/releases.json'),
+            fetch(DATA_PATH_PREFIX + 'output/tracker/tracking_issues.json').catch(() => null),
+            fetch(DATA_PATH_PREFIX + 'output/shared/optech_crossref.json').catch(() => null)
+        ]);
+        
+        if (!releasesRes.ok) throw new Error('Failed to fetch releases.json');
+        releasesData = await releasesRes.json();
+        
+        if (trackingIssuesRes && trackingIssuesRes.ok) {
+            trackingIssuesData = await trackingIssuesRes.json();
+        }
+        
+        if (optechRes && optechRes.ok) {
+            optechCrossref = await optechRes.json();
+        }
 
         loadingEl.style.display = 'none';
         contentEl.style.display = 'block';
@@ -449,6 +464,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const titleHTML = prTitle ? `<span class="pr-title-text">${prTitle}</span>` : '';
 
+            // Check if PR is part of an active project
+            let activeProjectBadge = '';
+            if (trackingIssuesData && trackingIssuesData.length > 0) {
+                for (const proj of trackingIssuesData) {
+                    if (proj.tasks) {
+                        for (const task of proj.tasks) {
+                            if (task.linked_prs && task.linked_prs.includes(parseInt(prNum))) {
+                                activeProjectBadge = `<div class="pr-project-badge" title="Part of active project: ${proj.project_name}"><i class="fas fa-project-diagram"></i> Part of: ${proj.project_name}</div>`;
+                                break;
+                            }
+                        }
+                    }
+                    if (activeProjectBadge) break;
+                }
+            }
+
+            // Optech Coverage Badge
+            let optechBadge = '';
+            let optechDataObj = null;
+            if (optechCrossref[prNum]) {
+                optechDataObj = optechCrossref[prNum];
+                optechBadge = `<div class="pr-project-badge" style="background: rgba(4, 120, 87, 0.1); border-color: rgba(4, 120, 87, 0.3); color: #10b981; margin-left: 8px;" title="Covered in Optech Newsletter"><i class="fas fa-newspaper"></i> Covered in Optech (${optechDataObj.date})</div>`;
+            }
+
             // Header Row (PR Number, Title, Tags)
             let headerHTML = `
                 <div class="pr-header-row">
@@ -461,6 +500,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                             </div>
                         </div>
                         ${titleHTML}
+                        <div style="display: flex; flex-wrap: wrap; margin-top: 8px;">
+                            ${activeProjectBadge}
+                            ${optechBadge}
+                        </div>
                     </div>
                     <div class="pr-cat-tags-container">
                         ${catTags}
@@ -480,6 +523,41 @@ document.addEventListener('DOMContentLoaded', async () => {
                     summaryP.style.color = 'var(--text-primary)';
                 }
                 prItem.appendChild(summaryP);
+            }
+
+            // Optech Summary Toggle
+            if (optechDataObj) {
+                const detailsContainer = document.createElement('div');
+                detailsContainer.className = 'pr-details-container';
+                detailsContainer.style.background = 'rgba(16, 185, 129, 0.03)';
+                detailsContainer.style.borderLeftColor = 'rgba(16, 185, 129, 0.5)';
+
+                const toggleBtn = document.createElement('button');
+                toggleBtn.className = 'pr-details-toggle';
+                toggleBtn.setAttribute('aria-expanded', 'false');
+                toggleBtn.style.color = 'rgba(16, 185, 129, 0.9)';
+                toggleBtn.innerHTML = `<i class="fas fa-chevron-down"></i> What Optech Says`;
+
+                const techContent = document.createElement('div');
+                techContent.className = 'pr-technical-content';
+                techContent.innerHTML = `
+                    <div style="font-size: 13.5px; opacity: 0.9;">
+                        ${optechDataObj.snippet}
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px;">
+                        <a href="${optechDataObj.optech_url}" target="_blank" style="color: rgba(16, 185, 129, 0.9); text-decoration: none; font-weight: 500;"><i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 4px;"></i>Read full coverage</a>
+                    </div>
+                `;
+
+                toggleBtn.addEventListener('click', () => {
+                    const isExpanded = toggleBtn.getAttribute('aria-expanded') === 'true';
+                    toggleBtn.setAttribute('aria-expanded', !isExpanded);
+                    techContent.classList.toggle('open');
+                });
+
+                detailsContainer.appendChild(toggleBtn);
+                detailsContainer.appendChild(techContent);
+                prItem.appendChild(detailsContainer);
             }
 
             // Technical Details Toggle

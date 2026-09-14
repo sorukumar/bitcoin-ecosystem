@@ -55,8 +55,8 @@ async function init() {
             await loadSnapshots(); // in charts-dashboard.js (now shared-ish)
         }
 
-        // Dashboard specific
-        if (document.getElementById('kpi-contributors')) await loadVitalSigns();
+        // Dashboard & Engineering Vital Signs
+        if (document.getElementById('kpi-contributors') || document.getElementById('kpi-prs-merged')) await loadVitalSigns();
         if (charts.category) await loadCategory();
         if (charts.growth) await loadGrowth();
         if (charts.engagement) await loadEngagementTiers();

@@ -34,94 +34,9 @@
         <div id="app-content" class="landing-layout">
             <div class="hero-section">
                 <h1>See How Bitcoin is Built.</h1>
-                <p>The analytics suite tracking Bitcoin's code velocity, ecosystem health, and development momentum.</p>
+                <p>The engineering & research intelligence suite tracking Bitcoin core commits, protocol debates, and release velocity.</p>
 
-
-
-                <section class="snapshot-panel" aria-label="Network Snapshot">
-                    <div class="snapshot-panel-head">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <h2 style="margin: 0;">Ecosystem Pulse</h2>
-                                <div class="window-toggle" style="margin: 0;" id="pulse-window-toggle">
-                                    <button class="window-btn" data-window="7d">Last 7 Days</button>
-                                    <button class="window-btn active" data-window="30d">Last 30 Days</button>
-                                </div>
-                            </div>
-                            <span id="freshness-line" class="freshness-line"
-                                style="margin: 0; font-size: 11px; font-weight: 600; padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 20px;"></span>
-                        </div>
-                        <p>A snapshot of who's building, what's shipping, and what's being debated.</p>
-                    </div>
-                    <div class="live-widgets">
-                        <!-- Card 1: Network Participants -->
-                        <article class="live-widget" style="display: flex; flex-direction: column;">
-                            <h3>Active Builders</h3>
-                            <div id="widget-active-count" class="live-widget-value">-</div>
-                            <p class="live-widget-note" style="margin-bottom: 16px;">Unique contributors active across
-                                code, peer review, and research discussions.</p>
-                            <ul class="simple-list" style="padding-left: 0; list-style: none;">
-                                <li><i class="fas fa-users" style="width: 16px; opacity: 0.6;"></i> <span
-                                        id="widget-voices-count"><strong>-</strong> Delving & mailing list
-                                        participants</span></li>
-                                <li><i class="fas fa-laptop-code" style="width: 16px; opacity: 0.6;"></i> <span
-                                        id="widget-new-coders"><strong>-</strong> first-time committers</span></li>
-                                <li><i class="fas fa-comment-dots" style="width: 16px; opacity: 0.6;"></i> <span
-                                        id="widget-new-discussants"><strong>-</strong> new Delving Bitcoin voices</span>
-                                </li>
-                            </ul>
-
-                            <div id="widget-spotlight-container"
-                                style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
-                                <div
-                                    style="color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px;">
-                                    <i class="fas fa-star" style="margin-right: 4px;"></i> Contributor Spotlight</div>
-                                <div id="widget-spotlight-content"
-                                    style="color: var(--text-secondary); line-height: 1.4; font-size: 13px;">Loading
-                                    spotlight...</div>
-                            </div>
-                        </article>
-
-                        <!-- Card 2: Code & Releases -->
-                        <article class="live-widget" style="display: flex; flex-direction: column;">
-                            <h3>Code & Releases</h3>
-                            <div id="widget-prs-count" class="live-widget-value">-</div>
-                            <p id="widget-prs-note" class="live-widget-note" style="margin-bottom: 16px;">Loading merge
-                                velocity...</p>
-
-                            <ul class="simple-list" style="padding-left: 0; list-style: none; margin-bottom: auto;">
-                                <li style="margin-bottom: 12px;"><i class="fas fa-code-commit" style="width: 16px; opacity: 0.6;"></i> <span
-                                        id="widget-commits-count"><strong>-</strong> commits pushed</span></li>
-                                <li id="widget-release-item" style="display: none; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);"><span id="widget-release-info"></span></li>
-                            </ul>
-                        </article>
-
-                        <!-- Card 3: Hot Topics & Research -->
-                        <article class="live-widget" style="display: flex; flex-direction: column;">
-                            <h3>Trending Discussions</h3>
-                            <div id="widget-research-count" class="live-widget-value">-</div>
-                            <p id="widget-research-note" class="live-widget-note" style="margin-bottom: 16px;">Loading
-                                signal...</p>
-
-                            <ul id="widget-topics" class="simple-list"
-                                style="padding-left: 0; list-style: none; margin-bottom: 16px;">
-                                <li>Loading topics...</li>
-                            </ul>
-
-                        </article>
-                    </div>
-
-                    <div class="bip-row" id="bip-row">
-                        <div class="bip-row-header">
-                            <i class="fas fa-file-lines" style="color: var(--primary); margin-right: 6px;"></i>
-                            <span>Active BIPs</span>
-                        </div>
-                        <ul id="widget-bips" class="bip-row-list">
-                            <li>Loading BIPs...</li>
-                        </ul>
-                    </div>
-                </section>
-
+                <!-- Suite Pillars Container (Mental Model) -->
                 <div class="pillars-container">
                     <a href="engineering.html" class="pillar-card pillar-what">
                         <div class="pillar-icon"><i class="fas fa-code-branch"></i></div>
@@ -150,9 +65,93 @@
                         </div>
                     </a>
                 </div>
+                <section class="snapshot-panel" aria-label="Network Snapshot">
+                    <div class="snapshot-panel-head">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <h2 style="margin: 0;">Ecosystem Pulse</h2>
+                                <div class="window-toggle" style="margin: 0;" id="pulse-window-toggle">
+                                    <button class="window-btn" data-window="7d">Last 7 Days</button>
+                                    <button class="window-btn active" data-window="30d">Last 30 Days</button>
+                                </div>
+                            </div>
+                            <span id="freshness-line" class="freshness-line"
+                                style="margin: 0; font-size: 11px; font-weight: 600; padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 20px;"></span>
+                        </div>
+                        <p>A snapshot of who's building, what's shipping, and what's being debated.</p>
+                    </div>
+                    <div class="live-widgets">
+                        <!-- Card 1: Network Participants -->
+                        <article class="live-widget clickable-widget" style="display: flex; flex-direction: column;" onclick="window.location.href='engineering.html'">
+                            <h3>Developer & Researcher Activity</h3>
+                            <div id="widget-active-count" class="live-widget-value">-</div>
+                            <p class="live-widget-note" style="margin-bottom: 16px;">Active across GitHub commits, PR reviews, and research lists.</p>
+                            <ul class="simple-list" style="padding-left: 0; list-style: none;">
+                                <li><i class="fas fa-user-plus" style="width: 16px; opacity: 0.6;"></i> <span
+                                        id="widget-newcomers"><strong>-</strong> newcomers across code & research</span></li>
+                            </ul>
 
+                            <div id="widget-spotlight-container"
+                                style="margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+                                <div
+                                    style="color: var(--primary); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-bottom: 4px;">
+                                    <i class="fas fa-star" style="margin-right: 4px;"></i> Featured New Builder</div>
+                                <div id="widget-spotlight-content"
+                                    style="color: var(--text-secondary); line-height: 1.4; font-size: 13px;" class="skeleton-load">Loading
+                                    spotlight...</div>
+                            </div>
+                        </article>
 
+                        <!-- Card 2: Code & Releases -->
+                        <article class="live-widget clickable-widget" style="display: flex; flex-direction: column;" onclick="window.location.href='releases.html'">
+                            <h3>Code Velocity & Releases</h3>
+                            <div id="widget-prs-count" class="live-widget-value">-</div>
+                            <p id="widget-prs-note" class="live-widget-note" style="margin-bottom: 16px;" class="skeleton-load">Loading merge
+                                velocity...</p>
 
+                            <ul class="simple-list" style="padding-left: 0; list-style: none; margin-bottom: auto;">
+                                <li style="margin-bottom: 12px;"><i class="fas fa-code-commit" style="width: 16px; opacity: 0.6;"></i> <span
+                                        id="widget-commits-count"><strong>-</strong> commits pushed</span></li>
+                                <li id="widget-release-item" style="display: none; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);"><span id="widget-release-info"></span></li>
+                            </ul>
+                        </article>
+
+                        <!-- Card 3: Hot Topics & Research -->
+                        <article class="live-widget clickable-widget" style="display: flex; flex-direction: column;" onclick="window.location.href='pulse.html'">
+                            <h3>Protocol Debates & Research</h3>
+                            <div id="widget-research-count" class="live-widget-value">-</div>
+                            <p id="widget-research-note" class="live-widget-note" style="margin-bottom: 16px;" class="skeleton-load">Loading
+                                signal...</p>
+
+                            <ul id="widget-topics" class="simple-list"
+                                style="padding-left: 0; list-style: none; margin-bottom: 16px;">
+                                <li>Loading topics...</li>
+                            </ul>
+
+                        </article>
+                    </div>
+
+                    <div class="bip-row" id="bip-row">
+                        <div class="bip-row-header">
+                            <i class="fas fa-file-lines" style="color: var(--primary); margin-right: 6px;"></i>
+                            <span>High-Signal BIPs & Proposals</span>
+                        </div>
+                        <ul id="widget-bips" class="bip-row-list">
+                            <li class="skeleton-load">Loading BIPs...</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="active-projects-row" id="active-projects-row" style="display: none; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 16px; margin-top: 16px;">
+                        <div class="bip-row-header" style="margin-bottom: 12px; display: flex; align-items: center;">
+                            <i class="fas fa-tasks" style="color: var(--primary); margin-right: 6px;"></i>
+                            <span>Active Initiatives</span>
+                            <a href="roadmap.html" style="margin-left: auto; font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-secondary)'">See Initiatives <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i></a>
+                        </div>
+                        <div id="widget-active-projects" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
 

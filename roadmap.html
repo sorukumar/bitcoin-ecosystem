@@ -4,251 +4,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roadmap | Orange Dev Tracker | Bitcoin Data Labs</title>
-    <meta name="description" content="Community roadmap for Bitcoin Data Labs. See what we are building next.">
+    <title>Active Initiatives | Orange Dev Tracker | Bitcoin Data Labs</title>
+    <meta name="description" content="Major initiatives in development in Bitcoin Core. Tracking umbrella issues, sub-tasks, and completion progress.">
     <link rel="canonical" href="https://tracker.bitcoindatalabs.org/roadmap.html">
-    <link rel="stylesheet" href="https://bitcoindatalabs.org/styles/styles.css">
+
+    <!-- Bitcoin Data Labs Font & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="icon" type="image/png" href="https://bitcoindatalabs.org/favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Bitcoin Data Labs Shell Styles -->
+    <link rel="stylesheet" href="https://bitcoindatalabs.org/styles/styles.css">
+
+    <!-- Modularized Local Styles -->
     <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/pulse.css">
+    <link rel="stylesheet" href="styles/active-projects.css">
 
-    <style>
-        :root {
-            --stripe-slate: #0a2540;
-            --stripe-text: #424770;
-            --app-bg: #fcfbf9;
-            --primary: #E8916B;
-        }
-
-        body {
-            background-color: var(--app-bg);
-            color: var(--stripe-text);
-            line-height: 1.6;
-            font-family: var(--bdl-font-sans);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        .layout-wrapper {
-            max-width: 1100px;
-            margin: 40px auto;
-            position: relative;
-            padding: 3rem 4rem;
-            flex: 1;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .page-header {
-            margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 1.5rem;
-        }
-
-        .header-text h1 {
-            font-size: 2rem;
-            color: #2D3748;
-            font-weight: 700;
-            margin: 0 0 0.5rem 0;
-            letter-spacing: -0.01em;
-        }
-
-        .header-text p {
-            font-size: 1.05rem;
-            color: #718096;
-            margin: 0;
-        }
-
-        .btn-propose {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(247, 147, 26, 0.3);
-            white-space: nowrap;
-        }
-
-        .btn-propose:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(247, 147, 26, 0.4);
-        }
-
-        #roadmap-content {
-            margin-top: 2rem;
-        }
-
-        .issue-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .issue-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 1.25rem 1.5rem;
-            background: white;
-            border: 1px solid #e6ebf1;
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            color: inherit;
-            box-shadow: 0 2px 8px rgba(42, 51, 66, 0.04);
-        }
-        .issue-item:hover {
-            border-color: #d1d9e2;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(42, 51, 66, 0.08);
-        }
-
-        .issue-icon {
-            color: var(--primary);
-            font-size: 1.25rem;
-        }
-
-        .issue-details {
-            flex: 1;
-        }
-
-        .issue-title {
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--stripe-slate);
-            margin: 0 0 4px 0;
-        }
-
-        .issue-meta {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin: 0;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 2rem;
-            color: #64748b;
-            background: white;
-            border-radius: 12px;
-            border: 1px dashed #cbd5e1;
-            box-shadow: 0 2px 8px rgba(42, 51, 66, 0.04);
-        }
-
-        .empty-state i {
-            font-size: 2.5rem;
-            color: #94a3b8;
-            margin-bottom: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .layout-wrapper {
-                padding: 2rem 1.5rem;
-                margin: 20px;
-            }
-            .page-header {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="icon" type="image/png" href="https://bitcoindatalabs.org/favicon.png">
 </head>
 
 <body class="has-fixed-header">
-    <div id="header"></div>
+    <div id="main-container">
+        <!-- Bitcoin Data Labs Header -->
+        <div id="header"></div>
 
-    <div class="layout-wrapper">
-        <header class="page-header">
-            <div class="header-text">
-                <h1>Tracker Roadmap</h1>
-                <p>Features actively prioritized for Data Pipeline & Codebase Analytics.</p>
+        <div id="app-content">
+            <div class="page-hero">
+                <p class="hero-narrative">Major initiatives currently in development in Bitcoin Core — tracking issues, sub-tasks, and momentum.</p>
             </div>
-            <a href="https://github.com/sorukumar/orange-dev-tracker/issues/new?template=tracker-feature.md" target="_blank" class="btn-propose">
-                <i class="fas fa-plus"></i> Suggest Feature
-            </a>
-        </header>
+            
+            <div class="pulse-layout-wrapper">
+                <!-- Main Content -->
+                <main class="pulse-main">
+                    
+                    <div id="active-projects-container" class="active-projects-container">
+                        <div class="active-projects-header">
+                            <h2 class="active-projects-title"><i class="fas fa-tasks"></i> Active Initiatives</h2>
+                            <p class="active-projects-subtitle">High-level projects currently in development, tracked via GitHub umbrella issues.</p>
+                        </div>
+                        <div id="active-projects-grid" class="active-projects-grid">
+                            <div style="text-align: center; padding: 20px; color: var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Loading active initiatives...</div>
+                        </div>
+                    </div>
 
-        <main id="roadmap-content">
-            <div id="loading" class="empty-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>Syncing roadmap with GitHub...</p>
+                </main>
             </div>
-            <ul id="issue-list" class="issue-list"></ul>
-        </main>
+        </div>
+
+        <!-- Backdrop Overlay -->
+        <div id="drawer-backdrop" class="drawer-backdrop"></div>
+
+        <!-- Slide-Over Drawer -->
+        <aside id="initiative-drawer" class="initiative-drawer" aria-hidden="true">
+            <div class="drawer-header">
+                <div>
+                    <div id="drawer-badges" class="project-badges" style="margin-bottom: 6px;"></div>
+                    <h2 id="drawer-title" class="drawer-title">Project Title</h2>
+                    <div id="drawer-meta" class="project-meta" style="margin-top: 4px;">Updated Date</div>
+                </div>
+                <button id="drawer-close-btn" class="drawer-close-btn" aria-label="Close Drawer">&times;</button>
+            </div>
+            
+            <div class="drawer-body">
+                <div id="drawer-champion" class="project-champion" style="margin-bottom: 12px;"></div>
+                <p id="drawer-description" class="project-description" style="margin-bottom: 16px;"></p>
+                
+                <div class="drawer-stats-row">
+                    <div class="drawer-stat">
+                        <span id="drawer-stat-completion" class="drawer-stat-val">0%</span>
+                        <span class="drawer-stat-lbl">Progress</span>
+                    </div>
+                    <div class="drawer-stat">
+                        <span id="drawer-stat-tasks" class="drawer-stat-val">0 / 0</span>
+                        <span class="drawer-stat-lbl">Tasks Completed</span>
+                    </div>
+                </div>
+
+                <div class="progress-container" style="margin-bottom: 24px;">
+                    <div id="drawer-progress-bar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+
+                <div class="drawer-controls">
+                    <div class="drawer-search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="drawer-task-search" placeholder="Search tasks or PR #..." autocomplete="off">
+                    </div>
+                    <div class="drawer-filter-tabs" id="drawer-filter-tabs">
+                        <button class="drawer-tab active" data-filter="all">All (<span id="count-all">0</span>)</button>
+                        <button class="drawer-tab" data-filter="open">Open (<span id="count-open">0</span>)</button>
+                        <button class="drawer-tab" data-filter="completed">Done (<span id="count-completed">0</span>)</button>
+                    </div>
+                </div>
+
+                <div id="drawer-tasks-list" class="drawer-tasks-list"></div>
+            </div>
+        </aside>
+
+        <!-- Bitcoin Data Labs Footer -->
+        <div id="footer"></div>
     </div>
 
-    <div id="footer"></div>
-
+    <!-- Bitcoin Data Labs App Components -->
     <script src="https://bitcoindatalabs.org/components/app-components.js"></script>
     <script src="js/app-config.js"></script>
+    <script src="js/utils.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const listEl = document.getElementById('issue-list');
-            const loadEl = document.getElementById('loading');
-            
-            try {
-                // Fetch issues labeled "Tracker"
-                const response = await fetch('https://api.github.com/repos/sorukumar/orange-dev-tracker/issues?state=open&labels=Tracker&sort=created&direction=asc');
-                if (!response.ok) throw new Error('Failed to fetch from GitHub API');
-                
-                const issues = await response.json();
-                
-                loadEl.style.display = 'none';
-
-                if (issues.length === 0) {
-                    listEl.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <p>No open roadmap items for Tracker currently.</p>
-                            <p>Got an idea? Click <strong>Suggest Feature</strong> above to kickstart the discussion!</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                issues.forEach(issue => {
-                    // Ignore pull requests if any accidentally have the label
-                    if(issue.pull_request) return;
-
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <a href="${issue.html_url}" target="_blank" class="issue-item">
-                            <div class="issue-icon">
-                                <i class="far fa-dot-circle"></i>
-                            </div>
-                            <div class="issue-details">
-                                <h3 class="issue-title">${issue.title}</h3>
-                                <p class="issue-meta">#${issue.number} opened by ${issue.user.login}</p>
-                            </div>
-                            <i class="fas fa-external-link-alt" style="color: #cbd5e1; font-size: 0.85rem;"></i>
-                        </a>
-                    `;
-                    listEl.appendChild(li);
-                });
-
-            } catch (error) {
-                console.error(error);
-                loadEl.innerHTML = `
-                    <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
-                    <p>Unable to load roadmap from GitHub.</p>
-                    <a href="https://github.com/sorukumar/orange-dev-tracker/issues?q=is%3Aissue+is%3Aopen+label%3ATracker" target="_blank" style="color: var(--primary); font-weight: 600;">View directly on GitHub →</a>
-                `;
-            }
-        });
-    </script>
+    <!-- Page Logic -->
+    <script src="js/roadmap.js"></script>
 </body>
 
 </html>

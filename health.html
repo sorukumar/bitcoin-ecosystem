@@ -43,12 +43,25 @@
         <!-- ═══════════════════════════════════════════════════════ -->
         <!-- BUS FACTOR CHART                                        -->
         <!-- ═══════════════════════════════════════════════════════ -->
+        <!-- ACT II: WORKFORCE STRUCTURE & RESILIENCE                -->
+        <!-- ═══════════════════════════════════════════════════════ -->
         <section class="story-section" style="margin-bottom: 40px;">
-            <div class="card">
-                <h2>Project Resilience: The Bus Factor</h2>
-                <p class="narrative">How many developers would need to leave for the project to lose half its engineering capacity? A higher number = more resilient.<br>
-                <span style="font-size: 0.9em; opacity: 0.8;"><em>(Calculated based on the number of developers who authored 50% of all commits)</em></span></p>
-                <div id="chart-bus-factor" style="height: 400px; width: 100%; margin-top: 20px;"></div>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <!-- Bus Factor -->
+                <div class="card" style="flex: 1; min-width: 320px; display: flex; flex-direction: column;">
+                    <h2>Project Resilience: The Bus Factor</h2>
+                    <p class="narrative" style="margin-bottom: 15px;">How many developers would need to leave for the project to lose half its engineering capacity?<br>
+                    <span style="font-size: 0.85em; opacity: 0.8;"><em>(Calculated based on developers authoring 50% of commits)</em></span></p>
+                    <div id="chart-bus-factor" style="flex: 1; height: 380px; width: 100%;"></div>
+                </div>
+
+                <!-- Engagement Pyramid -->
+                <div class="card" style="flex: 1; min-width: 320px; display: flex; flex-direction: column;">
+                    <h2>The Engagement Pyramid</h2>
+                    <p class="narrative" style="margin-bottom: 15px;">Categorizes contributors by lifetime authored commit volume. Highlights reliance on core maintainers vs. casual long-tail.<br>
+                    <span style="font-size: 0.85em; opacity: 0.8;"><em>(Top 1% Core vs Top 20% Regulars vs Long-tail Casuals • Authored Commits, Excludes Merges)</em></span></p>
+                    <div id="chart-engagement-tiers" style="flex: 1; height: 380px; width: 100%;"></div>
+                </div>
             </div>
         </section>
 
@@ -227,20 +240,39 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════ -->
-        <!-- ACT 3: GLOBAL CONTRIBUTOR EVOLUTION (Regional)        -->
+        <!-- ACT IV: ECOLOGICAL ONBOARDING & REGIONAL TALENT INFLOW  -->
         <!-- ═══════════════════════════════════════════════════════ -->
         <section id="regional-evolution" class="story-section">
             <div class="card">
-                <h2>Ecosystem Onboarding</h2>
-                <p class="narrative">Measures the expansion of Bitcoin's broader ecosystem, tracking the first recorded activity of all participants across code commits, peer reviews, BIP authorship, and mailing list/Delving discussions.</p>
+                <h2>Ecosystem Onboarding & Talent Inflow</h2>
+                <p class="narrative">Measures the onboarding rate of new developers making their first code commit, as well as the expansion of broader participant activity across global regions.</p>
 
-                <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
+                <!-- New Code Contributors Chart -->
+                <div style="margin-top: 25px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0; font-size: 14px;">
+                                <i class="fas fa-user-plus" style="margin-right: 8px; opacity: 0.7;"></i>
+                                New Code Contributors <span id="badge-growth-partial" class="partial-year-badge" style="display: none;">2026 Partial</span>
+                            </h4>
+                            <p style="font-size: 12px; color: var(--text-secondary); margin: 0;">Developers making their first code commit across Core and Ecosystem repos per year.</p>
+                        </div>
+                        <div class="window-toggle" style="margin: 0;">
+                            <button id="btn-growth-year-full" class="window-btn active">Full Years</button>
+                            <button id="btn-growth-year-ytd" class="window-btn">YTD 2026</button>
+                        </div>
+                    </div>
+                    <div id="chart-growth" style="height: 320px; width: 100%;"></div>
+                </div>
+
+                <!-- Regional Evolution -->
+                <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-top: 25px;">
                     <div style="flex: 1; width: 100%; display: flex; flex-direction: column;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
                             <div>
                                 <h4 style="margin-bottom: 10px; color: inherit; font-size: 14px;">
-                                    <i class="fas fa-chart-area" style="margin-right: 8px; opacity: 0.7;"></i>
-                                    New Ecosystem Participants <span id="badge-regional-partial" class="partial-year-badge" style="display: none;">2026 Partial</span>
+                                    <i class="fas fa-globe" style="margin-right: 8px; opacity: 0.7;"></i>
+                                    New Ecosystem Participants by Region <span id="badge-regional-partial" class="partial-year-badge" style="display: none;">2026 Partial</span>
                                 </h4>
                             </div>
                             <div class="window-toggle" style="margin: 0;">
@@ -248,7 +280,7 @@
                                 <button id="btn-regional-year-ytd" class="window-btn">YTD 2026</button>
                             </div>
                         </div>
-                        <div id="chart-regional-evolution" style="height: 400px; width: 100%;"></div>
+                        <div id="chart-regional-evolution" style="height: 380px; width: 100%;"></div>
                     </div>
                 </div>
             </div>
